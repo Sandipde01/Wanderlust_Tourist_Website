@@ -5,7 +5,6 @@ const geocodingClient = mbxGeocoding({ accessToken: mapToken });
 
 // Index Route
 module.exports.index = async (req, res) => {
-  console.log(req.body.value);
   const allListings = await Listing.find({});
   if (req.body.value) {
     let c = req.body.value;
@@ -40,7 +39,7 @@ module.exports.showListing = async (req, res) => {
     req.flash("error", "Listing you requested for does not exist!");
     res.redirect("/listings");
   }
-  console.log(listing);
+  // console.log(listing);
   res.render("./listings/show.ejs", { listing });
 };
 
@@ -49,14 +48,12 @@ module.exports.createListing = async (req, res, next) => {
   // let {title,description,image,price,country,location}=req.body;
 
   // let listing=req.body.listing;
-  console.log("ok");
   let response = await geocodingClient
     .forwardGeocode({
       query: req.body.listing.location,
       limit: 2,
     })
     .send();
-  console.log(req.body.value);
   let url = req.file.path;
   let filename = req.file.filename;
   const newListing = new Listing(req.body.listing);
