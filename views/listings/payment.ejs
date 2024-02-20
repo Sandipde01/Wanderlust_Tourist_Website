@@ -109,6 +109,15 @@
       .transparent {
         opacity: 0.2;
       }
+      .navbar-nav {
+        width: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+      }
+      .ex {
+        width: 100px;
+      }
       @media (max-width: 650px) {
         .creditCardForm .owner,
         .creditCardForm .CVV,
@@ -138,12 +147,13 @@
         </button>
         <div class="collapse navbar-collapse" id="navbarNavAltMarkup">
           <div class="navbar-nav">
-            <a class="nav-link" href="/">Home</a>
-            <a class="nav-link" href="/listings">All Listings</a>
-            <a class="nav-link" href="/listings/new">Add New Listings</a>
+            <a class="nav-link" href="/"><b>Explore</b></a>
+            <div class="left">
+              <a class="nav-link" href="/listings/new">Airbnb Your Home</a>
+            </div>
           </div>
 
-          <div class="navbar-nav ms-auto">
+          <div class="navbar-nav ex">
             <a class="nav-link" href="/logout"><b>Log out</b> </a>
           </div>
         </div>
