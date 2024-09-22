@@ -1,7 +1,33 @@
 const Listing = require("../models/listing");
-const mbxGeocoding = require("@mapbox/mapbox-sdk/services/geocoding");
+// const mbxGeocoding = require("@mapbox/mapbox-sdk/services/geocoding");
 const mapToken = process.env.MAP_TOKEN;
-const geocodingClient = mbxGeocoding({ accessToken: mapToken });
+// const geocodingClient = mbxGeocoding({ accessToken: mapToken });
+
+async function geocodeCity(city) {
+  const apiKey = mapToken; // Your OpenCage API key
+  const url = `https://api.opencagedata.com/geocode/v1/json?q=${encodeURIComponent(
+    city
+  )}&key=${apiKey}`;
+
+  try {
+    const response = await fetch(url);
+    const data = await response.json();
+
+    if (data.results.length > 0) {
+      const result = data.results[0];
+      const geo = {
+        type: "Point",
+        coordinates: [result.geometry.lat, result.geometry.lng],
+      };
+
+      return geo; // Return the geographic data
+    } else {
+      throw new alert("City not found");
+    }
+  } catch (error) {
+    return null; // Return null or handle the error appropriately
+  }
+}
 
 // Index Route
 module.exports.index = async (req, res) => {
@@ -45,21 +71,18 @@ module.exports.showListing = async (req, res) => {
 
 // Create Route
 module.exports.createListing = async (req, res, next) => {
-  // let {title,description,image,price,country,location}=req.body;
-
-  // let listing=req.body.listing;
-  let response = await geocodingClient
-    .forwardGeocode({
-      query: req.body.listing.location,
-      limit: 2,
-    })
-    .send();
+  let city = req.body.listing.location;
+  let geo = await geocodeCity(city);
+  if (!geo) {
+    req.flash("error", "City not found Please recreate listing!");
+    return res.redirect("/listings");
+  }
   let url = req.file.path;
   let filename = req.file.filename;
   const newListing = new Listing(req.body.listing);
   newListing.owner = req.user._id;
   newListing.image = { url, filename };
-  newListing.geometry = response.body.features[0].geometry;
+  newListing.geometry = geo; // geocode coordinates save
   let save = await newListing.save();
   req.flash("success", "New Listing Created!");
   res.redirect("/listings");
@@ -83,15 +106,27 @@ module.exports.renderEditFrom = async (req, res) => {
 // Update Listing
 
 module.exports.updateListing = async (req, res) => {
-  let { id } = req.params;
-  let listing = await Listing.findByIdAndUpdate(id, { ...req.body.listing });
+  const id = req.params.id;
+  let lisitng = await Listing.findByIdAndUpdate(id, { ...req.body.listing });
+
+  //For map update
+  let geo = await geocodeCity(req.body.listing.location);
+  if (!geo) {
+    req.flash("error", "City not found Please reupdate listing!");
+    return res.redirect("/listings");
+  }
+  lisitng.geometry = geo;
+  await lisitng.save();
+
+  //for image update
   if (typeof req.file !== "undefined") {
     let url = req.file.path;
     let filename = req.file.filename;
-    listing.image = { url, filename };
-    await listing.save();
+    lisitng.image = { url, filename };
+    await lisitng.save();
   }
-  req.flash("success", " Listing Updated!");
+
+  req.flash("success", "Update Listing!");
   res.redirect(`/listings/${id}`);
 };
 
@@ -103,4 +138,17 @@ module.exports.destroyListing = async (req, res) => {
   // console.log(deletedListing);
   req.flash("success", " Listing Deleted!");
   res.redirect("/listings");
+};
+
+module.exports.tags = async (req, res) => {
+  const tags = req.params;
+  console.log(tags);
+  const allListing = await Listing.find(tags);
+  console.log(allListing);
+  if (allListing.length > 0) {
+    return res.render("./listings/index.ejs", { allListing });
+  } else {
+    req.flash("error", "Any listing not found from this country name");
+    res.redirect("/listings");
+  }
 };

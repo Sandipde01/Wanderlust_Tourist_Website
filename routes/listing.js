@@ -51,4 +51,8 @@ router.get(
   wrapAsync(listingController.renderEditFrom)
 );
 
+
+
+// Tags Search Listing
+router.get("/:tags/tags", wrapAsync(listingController.tags));
 module.exports = router;

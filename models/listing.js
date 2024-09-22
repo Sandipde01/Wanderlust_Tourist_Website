@@ -15,6 +15,7 @@ const listingSchema = new Schema({
   price: Number,
   location: String,
   country: String,
+
   reviews: [
     {
       type: Schema.Types.ObjectId,
@@ -36,6 +37,7 @@ const listingSchema = new Schema({
       required: true,
     },
   },
+  tags: String,
 });
 
 listingSchema.post("findOneAndDelete", async (listing) => {

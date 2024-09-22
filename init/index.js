@@ -9,6 +9,7 @@ main()
     console.log("connected to DB");
   })
   .catch((err) => {
+    6666666666666666266666666 + 2;
     console.log(err);
   });
 
@@ -18,7 +19,10 @@ async function main() {
 
 const initDB = async () => {
   await Listing.deleteMany({});
-  initData.data =initData.data.map((obj)=>({...obj,owner:"65be321a03d6f1df3fbc623e"}));
+  initData.data = initData.data.map((obj) => ({
+    ...obj,
+    owner: "65be321a03d6f1df3fbc623e",
+  }));
   await Listing.insertMany(initData.data);
   console.log("data was initialized");
 };
